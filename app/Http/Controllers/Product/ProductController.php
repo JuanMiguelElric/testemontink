@@ -28,6 +28,9 @@ class ProductController extends Controller
             "preco"=>"required|integer",
             "variacoestype"=>"required|string",
        
+        ],[
+            "nome.required"=>"Insira um nome.",
+            "preco.required"=>"Insira um preço."
         ]);
         $variacoes = $request->input('variacoes.*');
         
@@ -40,7 +43,7 @@ class ProductController extends Controller
         if($produto->save()){
 
             $this->SalvarEstoque($variacoes, $produto->id);
-            return response()->json(["success"=>"produto adicionado com sucesso"],201);
+          return redirect()->route('home')->with('success', 'Produto adicionado com sucesso');
 
         }
      
@@ -49,6 +52,7 @@ class ProductController extends Controller
     
     }
 
+    //para registar o Estoque
     protected function SalvarEstoque($array, $produto){
 
         $total = 0;

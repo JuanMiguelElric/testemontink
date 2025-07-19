@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('home');
-});
+})->name("home");
 
 Route::resource('produtos', ProductController::class)->only(["index","store","update"])->missing(function(){
     return route("produtos.index");

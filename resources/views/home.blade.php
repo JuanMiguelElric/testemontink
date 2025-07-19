@@ -2,7 +2,60 @@
 
 @section('content')
 <!-- Modal for creatting product -->
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Large modal</button>
+
+ 
+        <div class="d-flex justify-content-end py-4">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Large modal</button>
+
+        </div>
+
+
+        @if ($errors->any())  
+    <ul id="error-list" class="p-3 w-25 d-flex flex-column btn-danger">
+        @foreach ($errors->all() as $error)  
+            <li>{{$error}}</li>
+        @endforeach  
+    </ul>
+
+    <script>
+        // Aguarda 5 segundos (5000 ms) e esconde a lista de erros
+        setTimeout(() => {
+            const errorList = document.getElementById('error-list');
+            if (errorList) {  
+                        errorList.style.transition = "opacity 0.5s ease"; // Para uma transição suave  
+                        errorList.style.opacity = 0; // Fades out the alert  
+                        setTimeout(function() {  
+                            alert.remove(); // Remove o alert do DOM após a animação  
+                        }, 500); // Tempo para terminar a animação  
+                    }  
+        }, 2000);
+    </script>
+@endif
+
+
+        @if (session('success'))  
+            <div id="alert" class="w-25" >  
+                <div class="p-3 bg-success border-rounded">
+                    {{ session('success') }}  
+                    
+                </div>
+            </div>  
+        
+            <script>  
+                // Espera 5 segundos (5000 milissegundos) antes de remover o alerta  
+                setTimeout(function() {  
+                    var alert = document.getElementById('alert');  
+                    if (alert) {  
+                        alert.style.transition = "opacity 0.5s ease"; // Para uma transição suave  
+                        alert.style.opacity = 0; // Fades out the alert  
+                        setTimeout(function() {  
+                            alert.remove(); // Remove o alert do DOM após a animação  
+                        }, 500); // Tempo para terminar a animação  
+                    }  
+                }, 2000); // Tempo em milissegundos para manter o alerta visível  
+            </script>  
+        @endif  
+
 
 <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
