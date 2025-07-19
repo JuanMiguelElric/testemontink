@@ -14,7 +14,8 @@ class Produto extends Model
     protected $fillable =[
         "nome",
         "preco",
-        "variacoes"
+        "variacoes",
+        "variacoestype"
     ];
 
     protected function estoques():HasMany

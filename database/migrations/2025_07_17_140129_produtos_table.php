@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string("nome",255);
             $table->float("preco",10,2);
+            $table->string("variacoestype",255);
             $table->json("variacoes");
             $table->timestamps();
         });
