@@ -23,13 +23,10 @@ class PedidoController extends Controller
             'nome_cliente' => 'required|string',
             'total' => 'required|numeric',
             'frete' => 'required|json',
-            'cupon_id' => 'nullable|integer|exists:cupons,id', // ✅ opcional
             'produtos' => 'required|array',
             'produtos.*.produto_id' => 'required|integer|exists:produtos,id',
             'produtos.*.quantidade' => 'required|integer|min:1'
         ]);
-
-       
 
         DB::beginTransaction();
         try {
@@ -37,23 +34,35 @@ class PedidoController extends Controller
                 'nome_cliente' => $data['nome_cliente'],
                 'total' => $data['total'],
                 'frete' => $data['frete'],
-                'status' => 0,
-                
-                'cupon_id' => $data['cupon_id'] ?? null, // ✅ Se não vier, será NULL
+                'status' => 0, // 0 = pendente
             ]);
 
-         
-
             foreach ($data['produtos'] as $produto) {
+                // ✅ Cria o item do pedido
                 PedidoProduto::create([
                     'pedido_id' => $pedido->id,
                     'produto_id' => $produto['produto_id'],
                     'quantidade' => $produto['quantidade'],
                 ]);
+
+  
+                $estoque = \App\Models\Estoque::where('produto_id', $produto['produto_id'])->first();
+                if ($estoque) {
+                    $estoque->quantidade -= $produto['quantidade'];
+                    if ($estoque->quantidade < 0) {
+                        $estoque->quantidade = 0; // Evita números negativos
+                    }
+                    $estoque->save();
+                }
             }
 
             DB::commit();
-            return response()->json($pedido);
+            return response()->json([
+                'success' => true,
+                'id' => $pedido->id,
+                'mensagem' => 'Pedido criado com sucesso e estoque atualizado!'
+            ], 201);
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
