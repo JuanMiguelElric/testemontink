@@ -18,12 +18,12 @@ class Produto extends Model
         "variacoestype"
     ];
 
-    protected function estoques():HasMany
+    public function estoques():HasMany
     {
         return $this->hasMany(Estoque::class, "produto_id");
     }
 
-    protected function pedido_produtos():HasMany
+    public function pedido_produtos():HasMany
     {
         return $this->hasMany(PedidoProduto::class, "produto_id");
     }

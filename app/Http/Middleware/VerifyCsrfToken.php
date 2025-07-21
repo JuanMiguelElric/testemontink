@@ -12,6 +12,6 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        'produtos/*',  // Exclui todas as rotas que começam com /produtos/
     ];
 }

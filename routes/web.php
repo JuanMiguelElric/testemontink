@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Product\ProductController;
+use App\Models\Produto;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,9 +16,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('home');
+
+    $produtos = Produto::all();
+    return view('home', compact('produtos'));
 })->name("home");
 
-Route::resource('produtos', ProductController::class)->only(["index","store","update"])->missing(function(){
+Route::resource('produtos', ProductController::class)->only(["index","store","update","show","destroy"])->missing(function(){
     return route("produtos.index");
 });
+
+
