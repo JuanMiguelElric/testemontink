@@ -6,7 +6,7 @@
     <div class="col-12 p-3 w-100">
 
          <div class="d-flex justify-content-end py-4">
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Large modal</button>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Adicionar produto</button>
 
         </div>
 
@@ -80,14 +80,14 @@
                      <div class="form-group">
                         <label for="exampleInputEmail1">Nome do produto:</label>
                         <input type="text" class="form-control" name="nome"  placeholder="Insira aqui o nome do produto:">
-                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                   
                     </div>
                 </div>
                 <div class="col-12">
                      <div class="form-group">
                         <label for="exampleInputEmail1">Preço:</label>
                         <input type="text" class="form-control" name="preco"  placeholder="00,00">
-                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                   
                     </div>
                 </div>
     
@@ -202,224 +202,103 @@
 
 
 
-        <script src="{{asset('resources/js/requisicaoAjax.js')}}"></script>
-        <script src="{{ asset('resources/js/variacoes.js') }}"></script>
-
-
-        <script>
-  // guarda instância do Bootstrap Modal
-        let editModal = new bootstrap.Modal(document.getElementById('editModal'));
-
-        // carrega a tabela
-        function loadProdutos() {
-            fetch('/produtos')
-            .then(res => res.json())
-            .then(lista => {
-                const tbody = document.getElementById('produtos-body');
-                tbody.innerHTML = '';
-                lista.forEach(p => {
-                tbody.insertAdjacentHTML('beforeend', `
-                    <tr>
-                    <td>${p.nome}</td>
-                    <td>R$ ${parseFloat(p.preco).toFixed(2)}</td>
-                    <td>${p.variacoestype}</td>
-                    <td>${p.quantidade}</td>
-                    <td>
-                        <a href="#"
-                        class="btn btn-sm btn-warning me-1"
-                        onclick="openEditModal(${p.id}); return false;">
-                        Editar
-                        </a>
-                        <a href="/produtos/${p.id}/delete"
-                        class="btn btn-sm btn-danger">
-                        Excluir
-                        </a>
-                    </td>
-                    </tr>
-                `);
-                });
-            })
-            .catch(console.error);
-        }
-
-        // abre o modal e popula campos
-        // assume que editModal já foi instanciado como:
-
-
-         // CONTADOR e funções de variações (do seu variacoes.js)
-        var idContadorEdit = 0;
-
-        function excluirEdit(id) {
-            $('#' + id).remove();
-            idContadorEdit--;
-            $('.quantidade_edit').val(idContadorEdit);
-        }
-       function AdicionarCampoEdit(nome = '', quantidade = '') {
-        idContadorEdit++;
-        const idCampo = "CampoExtraEdit" + idContadorEdit;
-        const html = `
-        <div class="w-100 d-flex mt-3" id="${idCampo}">
-            <input
-                class="form-control me-2"
-                placeholder="Variação"
-                name="variacoes[${idContadorEdit}][nome]"
-                value="${nome}"
-            />
-            <input
-                type="number"
-                class="form-control me-2"
-                placeholder="Quantidade"
-                name="variacoes[${idContadorEdit}][quantidade]"
-                value="${quantidade}"
-            />
-            <button
-                class="btn btn-danger"
-                type="button"
-                onclick="excluirEdit('${idCampo}')"
-            >Apagar</button>
-        </div>
-        `;
-        $('.quantidade_edit').val(idContadorEdit);
-        $('#imendaHtmltext_edit').append(html);
-    }
-
-
-        // handler de “Adicionar variação”
-        $(document).on('click', '#edit_Adicionar_campo', function(e) {
-            e.preventDefault();
-            AdicionarCampoEdit();
-        });
-
-        async function openEditModal(id) {
-            try {
-                const res = await fetch(`/produtos/${id}`);
-                if (!res.ok) throw new Error(res.statusText);
-                const p = await res.json();
-
-                console.log('Produto carregado:', p); // Aqui vemos o conteúdo do produto
-
-                // 1) Preencher campos básicos
-                document.getElementById('produto_id').value = p.id;
-                document.getElementById('edit_nome').value = p.nome;
-                document.getElementById('edit_preco').value = p.preco;
-                document.getElementById('edit_variacoestype').value = p.variacoestype;
-
-                // 2) Limpar variações anteriores e resetar contador
-                $('#imendaHtmltext_edit').empty();
-                idContadorEdit = 0;
-                $('.quantidade_edit').val(0);
-
-                // 3) Verifique se p.variacoes é uma string ou outro formato
-                  let variacoesArr = [];
-
-                if (p.variacoes) {
-                    try {
-                        if (Array.isArray(p.variacoes)) {
-                            variacoesArr = p.variacoes;
-                        } else if (typeof p.variacoes === 'string') {
-                            // Faz parse duas vezes se necessário (para strings encodadas 2x)
-                            let temp = JSON.parse(p.variacoes);
-                            variacoesArr = Array.isArray(temp) ? temp : JSON.parse(temp);
-                        }
-                        console.log("Variações carregadas:", variacoesArr);
-                    } catch (e) {
-                        console.warn('Erro ao parsear variacoes:', e);
-                        variacoesArr = [];
-                    }
-                }
-
-
-                  // Limpa antes de adicionar
-                  $('#imendaHtmltext_edit').empty();
-                  idContadorEdit = 0;
-                  $('.quantidade_edit').val(0);
-
-                  // Adiciona só as variações existentes
-                  variacoesArr.forEach(v => {
-                      AdicionarCampoEdit(v.nome, v.quantidade);
-                  });
-
-
-                // 4) Adicionar as variações no modal
-             
-
-                // 5) Abre o modal após preencher todas as variações
-                editModal.show();
-            } catch (err) {
-                alert('Erro ao carregar produto: ' + err.message);
-            }
-            }
 
 
 
-
-
-        // captura submissão do form e envia via PUT
-            document.getElementById('editForm').addEventListener('submit', function(e) {
-              e.preventDefault();
-
-              const id = document.getElementById('produto_id').value;
-
-              // Coleta das variações como array
-              const variacoesArr = $('#imendaHtmltext_edit > div').map(function() {
-                  return {
-                      nome: $(this).find('input[name*="[nome]"]').val(),
-                      quantidade: $(this).find('input[name*="[quantidade]"]').val()
-                  };
-              }).get();
-
-              const formData = new FormData();
-              formData.append('_method', 'PUT'); // ← O Laravel usa isso para aceitar PUT
-              formData.append('nome', document.getElementById('edit_nome').value);
-              formData.append('preco', document.getElementById('edit_preco').value);
-              formData.append('variacoestype', document.getElementById('edit_variacoestype').value);
-              formData.append('variacoes', JSON.stringify(variacoesArr));
-
-              fetch(`/produtos/${id}`, {
-                  method: 'POST', // ← Importante! Sempre POST quando usa _method
-                  headers: {
-                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                  },
-                  body: formData
-              })
-              .then(res => {
-                  if (!res.ok) throw new Error('Status ' + res.status);
-                  return res.json();
-              })
-              .then(() => {
-                  editModal.hide();
-                  // Mostra o alerta
-                  const alertBox = document.getElementById('alertSucesso');
-                  alertBox.classList.remove('d-none');
-
-                  // Esconde o alerta depois de 3s
-                  setTimeout(() => {
-                      alertBox.classList.add('d-none');
-                  }, 3000);
-
-                  loadProdutos();
-
-              })
-              .catch(err => {
-                  console.error('Erro ao salvar:', err);
-              
-              });
-          });
-
-        // inicializa
-        document.addEventListener('DOMContentLoaded', loadProdutos);
-        </script>
-
-
-
-
-        
-    
 
     </div>
 
 </div>
 
+<div class="modal fade" id="modalCarrinho" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Adicionar ao Carrinho</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="carrinho_produto_id">
+
+        <div class="mb-3">
+          <label class="form-label">Produto</label>
+          <input type="text" id="carrinho_produto_nome" class="form-control" readonly>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Variação</label>
+          <select id="carrinho_variacao" class="form-select"></select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Quantidade</label>
+          <input type="number" id="carrinho_quantidade" class="form-control" value="1" min="1">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="adicionarAoCarrinho()">Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="carrinhoOffcanvas">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Meu Carrinho</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div id="carrinho_itens"></div>
+    <hr>
+
+    <h6>Resumo do Pedido</h6>
+    <p>Subtotal: R$ <span id="carrinho_subtotal">0,00</span></p>
+    <p>Frete: R$ <span id="carrinho_frete">0,00</span></p>
+    <p>Desconto: R$ <span id="carrinho_desconto">0,00</span></p>
+    <h5>Total: R$ <span id="carrinho_total">0,00</span></h5>
+
+    <hr>
+    <div class="mb-3">
+      <label class="form-label">CEP</label>
+      <input type="text" id="cep" class="form-control" placeholder="Digite o CEP">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Logradouro</label>
+      <input type="text" id="logradouro" class="form-control" readonly>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Cidade</label>
+      <input type="text" id="cidade" class="form-control" readonly>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Número</label>
+      <input type="text" id="numero" class="form-control" placeholder="Digite o número">
+    </div>
+    <button class="btn btn-success w-100 mb-3" onclick="calcularFrete()">Calcular Frete</button>
+
+    <hr>
+    <div class="mb-3">
+      <label class="form-label">Cupom de Desconto</label>
+      <input type="text" id="cupom" class="form-control" placeholder="Digite seu cupom">
+    </div>
+    <button class="btn btn-primary w-100" onclick="aplicarCupom()">Aplicar Cupom</button>
+  </div>
+</div>
+
+<!-- Botão fixo para abrir o carrinho -->
+<button class="btn btn-primary position-fixed" style="bottom:20px; right:20px; z-index:2000" 
+        data-bs-toggle="offcanvas" data-bs-target="#carrinhoOffcanvas">
+  🛒 Carrinho
+</button>
+
+
+
+        <script src="{{asset('resources/js/requisicaoAjax.js')}}"></script>
+        <script src="{{ asset('resources/js/variacoes.js') }}"></script>
+        <script src="{{asset('resources/js/modalEdicao.js')}}"></script>
+        <script src="{{asset('resources/js/submitform.js')}}"></script>
+        <script src="{{asset('resources/js/carrinho.js')}}"></script>
 
 
  
