@@ -108,46 +108,25 @@ public function index()
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Produto $produto)
-    {
-        // Validação dos dados
-        
+        public function update(Request $request, Produto $produto)
+        {
+            $data = $request->validate([
+                "nome" => "required|string",
+                "preco" => "required|numeric",
+                "variacoestype" => "required|string",
+                "variacoes" => "nullable|json",
+            ]);
 
-       
-        $data = $request->validate([
-            "nome" => "required|string",
-            "preco" => "required|numeric",  
-            "variacoestype" => "required|string",
-            "variacoes"=> "nullable|json",
+            if ($produto->update($data)) {
+                $this->editarEstoque($data["variacoes"] ?? null, $produto->id);
 
-        ], [
-            "nome.required" => "Insira um nome.",
-            "preco.required" => "Insira um preço.",
-        ]);
+                return response()->json([
+                    'success' => "editado com sucesso"
+                ], 200); // ✅ Corrigido para 200
+            }
 
-     
-  
-
-        // Captura as variações do produto (certifique-se que elas estão sendo enviadas corretamente)
-
-       
-
-        // Se variacoes não for vazio, convertemos para JSON
-
-
-        // Atualiza o produto com os novos dados
-        if ($produto->update($data)) {
-            // Atualiza o estoque com as novas variações
-    
-              $this->editarEstoque($data["variacoes"], $produto->id);
-    
-            // Retorna para a página de sucesso
-            return response()->json(['success' => "editado com sucesso"]);
+            return response()->json(['success' => false], 500);
         }
-
-        // Se falhar, retorna uma mensagem de erro
-        return back()->with('error', 'Erro ao atualizar produto');
-    }
 
          protected function editarEstoque($variacoes, $produtoId)
         {

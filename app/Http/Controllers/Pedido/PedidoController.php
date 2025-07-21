@@ -69,7 +69,7 @@ class PedidoController extends Controller
             'nome_cliente' => $pedido->nome_cliente,
             'total' => $pedido->total,
             'status' => $pedido->status_texto, // Texto legível com accessor
-            'data_pedido' => $pedido->data_pedido,
+   
             'cupom' => $pedido->Cupom,
             'produtos' => $pedido->pedido_produtos->map(function ($pp) {
                 return [
@@ -86,16 +86,22 @@ class PedidoController extends Controller
     public function update(Request $request, Pedido $pedido)
     {
         $data = $request->validate([
-            'status' => 'required|integer|in:0,1,2,3' // ✅ apenas valores válidos
+            'status' => 'required|integer|in:0,1,2,3'
         ]);
 
         $pedido->update(['status' => $data['status']]);
 
+        // ✅ Recarrega os dados para garantir que o Accessor use o valor atualizado
+        $pedido->refresh();
+
         return response()->json([
             'success' => true,
-            'status' => $pedido->status_texto, // retorna o texto legível atualizado
+            'status' => $pedido->status_texto,
             'mensagem' => "Status atualizado com sucesso para {$pedido->status_texto}!"
-        ]);
+        ], 200);
     }
+
+
+
 
 }

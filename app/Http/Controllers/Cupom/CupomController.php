@@ -39,7 +39,7 @@ class CupomController extends Controller
 
         $cupom = new Cupom($data);
         if($cupom->save()){
-            return response()->json(["success"=>true]);
+            return response()->json(["success"=>true],201);
         }
     }
 
