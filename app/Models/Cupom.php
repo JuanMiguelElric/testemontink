@@ -11,7 +11,14 @@ class Cupom extends Model
     use HasFactory;
 
     protected $table = "cupons";
-    protected $fillable = ["codigo","desconto","validade"];
+      protected $fillable = [
+        'codigo', 'desconto', 'valor_minimo', 'validade'
+    ];
+
+        public function isValido($subtotal)
+    {
+        return now()->lte($this->validade) && $subtotal >= $this->valor_minimo;
+    }
 
     public function pedidos():HasMany
     {

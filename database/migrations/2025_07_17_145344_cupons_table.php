@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('cupons', function (Blueprint $table) {
             $table->id();
-            $table->string("codigo")->unique();
-            $table->float("desconto");
-            $table->date("validade");
+            $table->string('codigo')->unique(); // Código do cupom
+            $table->decimal('desconto', 5, 2); // Porcentagem de desconto
+            $table->decimal('valor_minimo', 10, 2)->default(0); // Valor mínimo do carrinho para aplicar
+            $table->date('validade'); // Data de validade
             $table->timestamps();
         });
     }
