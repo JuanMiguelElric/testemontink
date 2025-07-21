@@ -1,6 +1,53 @@
 let carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
 let descontoPercentual = 0;
 let freteAtual = 0;
+const modalCarrinho = new bootstrap.Modal(document.getElementById('modalCarrinho'));
+
+// --- Abrir modal e carregar variações ---
+function abrirModalCarrinho(id, nome, preco, variacoesJson) {
+    document.getElementById('carrinho_produto_id').value = id;
+    document.getElementById('carrinho_produto_nome').value = nome;
+
+    const select = document.getElementById('carrinho_variacao');
+    select.innerHTML = '';
+
+    try {
+        const variacoes = JSON.parse(variacoesJson);
+        variacoes.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = JSON.stringify({ nome: v.nome, preco: preco });
+            opt.textContent = `${v.nome} (Disponível: ${v.quantidade})`;
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        console.error("Erro ao carregar variações", e);
+    }
+
+    modalCarrinho.show();
+}
+
+// --- Adicionar produto ao carrinho ---
+function adicionarAoCarrinho() {
+    const id = document.getElementById('carrinho_produto_id').value;
+    const nome = document.getElementById('carrinho_produto_nome').value;
+    const variacao = JSON.parse(document.getElementById('carrinho_variacao').value);
+    const quantidade = parseInt(document.getElementById('carrinho_quantidade').value);
+
+    carrinho.push({
+        id, nome,
+        variacao: variacao.nome,
+        preco: parseFloat(variacao.preco),
+        quantidade
+    });
+
+    localStorage.setItem('carrinho', JSON.stringify(carrinho));
+    atualizarCarrinho();
+    modalCarrinho.hide();
+}
+
+// --- Atualizar listagem do carrinho ---
+
+// --- Atualizar listagem do carrinho e valores ---
 
 function atualizarCarrinho() {
     const container = document.getElementById('carrinho_itens');
@@ -81,11 +128,11 @@ function aplicarCupom() {
     const subtotal = parseFloat(document.getElementById('carrinho_subtotal').innerText);
 
     if (!cupom) {
-        alert("Digite um cupom.");
+        abrirModalMensagem("alerta", "Aviso", "Digite um cupom antes de continuar.");
         return;
     }
 
-    fetch('/api/cupons/verificar', {
+    fetch('/cupons/verificar', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -96,24 +143,59 @@ function aplicarCupom() {
     .then(res => res.json())
     .then(resp => {
         if (!resp.valido) {
-            alert(resp.mensagem);
+            // Diferencia mensagens
+            if (resp.motivo === 'vencido') {
+                abrirModalMensagem("erro", "Cupom Vencido", resp.mensagem);
+            } else if (resp.motivo === 'valor_minimo') {
+                abrirModalMensagem("alerta", "Valor Mínimo", resp.mensagem);
+            } else {
+                abrirModalMensagem("erro", "Erro", resp.mensagem);
+            }
             return;
         }
+
         descontoPercentual = resp.desconto;
-        alert(`Cupom aplicado! Desconto de ${descontoPercentual}%`);
+        abrirModalMensagem("sucesso", "Cupom Aplicado", `Desconto de ${descontoPercentual}% aplicado com sucesso!`);
         atualizarCarrinho();
     })
-    .catch(() => alert("Erro ao validar cupom!"));
+    .catch(() => abrirModalMensagem("erro", "Erro", "Erro ao validar cupom!"));
 }
+
+
+function abrirModalMensagem(tipo, titulo, texto) {
+    const modalContent = document.getElementById('modalMensagemContent');
+    const modalTitulo = document.getElementById('modalMensagemTitulo');
+    const modalTexto = document.getElementById('modalMensagemTexto');
+
+    modalContent.className = "modal-content text-white"; // reset base
+
+    if (tipo === "sucesso") {
+        modalContent.classList.add("bg-success");
+    } else if (tipo === "erro") {
+        modalContent.classList.add("bg-danger");
+    } else if (tipo === "alerta") {
+        modalContent.classList.add("bg-warning", "text-dark");
+    } else {
+        modalContent.classList.add("bg-secondary");
+    }
+
+    modalTitulo.innerText = titulo;
+    modalTexto.innerText = texto;
+
+    const modal = new bootstrap.Modal(document.getElementById('modalMensagem'));
+    modal.show();
+}
+
 
 function finalizarCompra() {
     const nome_cliente = document.getElementById('nome_cliente').value;
     if (!nome_cliente) {
-        alert("Digite o nome do cliente.");
+        abrirModalMensagem("alerta", "Aviso", "Digite o nome do cliente.");
         return;
     }
+
     if (carrinho.length === 0) {
-        alert("Carrinho vazio!");
+        abrirModalMensagem("alerta", "Aviso", "Carrinho vazio!");
         return;
     }
 
@@ -127,6 +209,7 @@ function finalizarCompra() {
             cidade: document.getElementById('cidade').value,
             numero: document.getElementById('numero').value
         }),
+        cupon_id: cupon_id, // ✅ Enviamos o ID do cupom, se existir
         produtos: carrinho.map(item => ({
             produto_id: item.id,
             quantidade: item.quantidade
@@ -141,17 +224,22 @@ function finalizarCompra() {
         },
         body: JSON.stringify(payload)
     })
-    .then(res => {
-        if (!res.ok) throw new Error('Erro ao finalizar pedido');
-        return res.json();
-    })
+    .then(res => res.json())
     .then(resp => {
-        alert("Pedido finalizado com sucesso! Nº do pedido: " + resp.id);
+        abrirModalMensagem("sucesso", "Pedido Finalizado", "Pedido Nº " + resp.id + " finalizado com sucesso!");
         carrinho = [];
         localStorage.removeItem('carrinho');
         atualizarCarrinho();
+
+
+        setTimeout(() => {
+            window.location.href = "/pedidos";
+        }, 2000);
     })
-    .catch(err => alert(err.message));
+    .catch(() => abrirModalMensagem("erro", "Erro", "Erro ao finalizar o pedido!"));
 }
 
+// Inicializa
 document.addEventListener('DOMContentLoaded', atualizarCarrinho);
+
+

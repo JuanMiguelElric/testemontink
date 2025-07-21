@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Cupom\CupomController;
-use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\Pedido\PedidoController;
 use App\Http\Controllers\Product\ProductController;
 use App\Models\Produto;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +35,14 @@ Route::get("/cupon/json",[CupomController::class,"CuponsJson"])->name("cupom.jso
 
 Route::post("/cupons/verificar",[CupomController::class,"verificarCupom"]);
 
-Route::post("/pedidos",[PedidoController::class,'store']);
+
+
+Route::get('/pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
+
+
+Route::post("/pedidos",[PedidoController::class,"store"]);
+Route::get('/pedidos/{pedido}', [PedidoController::class, 'show'])->name('pedidos.show');
+
+Route::put('/pedidos/{pedido}', [PedidoController::class, 'update'])->name('pedidos.update');
 
 
